@@ -1,11 +1,13 @@
 'use strict';
 
-var radius = require('radius');
-var dgram = require("dgram");
-var secret = 'radius_secret';
-var server = dgram.createSocket("udp4");
+const radius = require('radius');
+const dgram = require("dgram");
+const secret = 'radius_secret';
+const server = dgram.createSocket("udp4");
 
 module.exports.setup = function setup(workers) {
+
+  const CargoProcessor = require('./radius-msg-cargo');
 
   server.on("message", function(msg, rinfo) {
     var code, username, password, packet;
@@ -36,17 +38,22 @@ module.exports.setup = function setup(workers) {
 
     server.send(response, 0, response.length, rinfo.port, rinfo.address,
       function(err, bytes) {
+
         if (err) {
           console.log('Error sending response to ', rinfo);
         }
       });
+
+    CargoProcessor.enqueue({
+      id: Date.now(),
+      packet: packet
+    });
   });
 
   server.on("listening", function() {
     var address = server.address();
-    console.log("radius server listening " +
-      address.address + ":" + address.port);
-
+    console.log("radius server listening " + address.address + ":" +
+      address.port);
   });
 
   server.bind(1813);
