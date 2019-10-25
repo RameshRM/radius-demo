@@ -5,9 +5,13 @@ const SuperAgent = require('superagent');
 module.exports.act = act;
 
 function act(options, next) {
-  let urlPath = process.env.URL_PATH || 'http://localhost:3333';
+  let urlPath = process.env.URL_PATH || 'http://localhost:8080/process';
 
-  SuperAgent.post(urlPath).query(options).timeout(100).retry(2)
+  if (Date.now() % 13 === 0) {
+    // console.log(options);
+  }
+
+  SuperAgent.post(urlPath).send(options).timeout(100).retry(0)
     .end(function(err, resp) {
       return next(undefined, {
         status: resp && resp.statusCode

@@ -6,6 +6,7 @@ const Cargo = buildCargo();
 const msgActor = require('./radius-msg-actor');
 
 function enqueue(msgPacket, next) {
+
   if (!msgPacket) {
     return;
   }
@@ -28,15 +29,15 @@ function buildCargo() {
       return msgActor.act(task, next);
     }, next);
     return next();
-  });
+  },100);
   cargo.drain(function() {
-    console.log('Messages are complete and drained');
+
   });
   cargo.empty(function empty() {
-    console.log('Messages are complete and empty');
+
   });
   cargo.error(function error(err) {
-    console.log('Cargo has Errored ', err && err.message);
+
   });
   return cargo;
 }

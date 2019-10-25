@@ -2,38 +2,37 @@
 
 const radius = require('radius');
 const dgram = require("dgram");
-const secret = 'radius_secret';
+const secret = 'testing123';
 const server = dgram.createSocket("udp4");
 
-module.exports.setup = function setup(workers) {
+module.exports.setup = function setup(pid, Metrics) {
 
   const CargoProcessor = require('./radius-msg-cargo');
 
   server.on("message", function(msg, rinfo) {
+    Metrics.addSeries({
+      status: 'Stop',
+      address: rinfo.address
+    });
+
     var code, username, password, packet;
     packet = radius.decode({
       packet: msg,
       secret: secret
+
     });
 
-    if (packet.code != 'Access-Request') {
-      console.log('unknown packet type: ', packet.code);
-      return;
+
+
+    if (Date.now() % 13 === 0) {
+      // console.log(packet);
     }
 
-    username = packet.attributes['User-Name'];
-    password = packet.attributes['User-Password'];
-
-    if (username == 'jlpicard' && password == 'beverly123') {
-      code = 'Access-Accept';
-    } else {
-      code = 'Access-Reject';
-    }
-
+    console.log(packet.code);
     var response = radius.encode_response({
       packet: packet,
-      code: code,
-      secret: secret
+      code: 'Accounting-Response',
+      secret: 'testing123'
     });
 
     server.send(response, 0, response.length, rinfo.port, rinfo.address,
@@ -42,12 +41,16 @@ module.exports.setup = function setup(workers) {
         if (err) {
           console.log('Error sending response to ', rinfo);
         }
+        CargoProcessor.enqueue({
+          id: Date.now(),
+          packet: packet.attributes
+        });
+        Metrics.addSeries({
+          status: 'Sent'
+        });
+
       });
 
-    CargoProcessor.enqueue({
-      id: Date.now(),
-      packet: packet
-    });
   });
 
   server.on("listening", function() {
