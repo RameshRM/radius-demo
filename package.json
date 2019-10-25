@@ -10,10 +10,10 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "app-manifest-store": "git+https://bc8bf2198e4c5f881ea456f909babc6184739f6a:x-oauth-basic@github.corp.ebay.com/xdx/data-store.git",
+    
     "async": "^3.1.0",
     "express": "^4.17.1",
-    "lds-data-store": "git+https://bc8bf2198e4c5f881ea456f909babc6184739f6a:x-oauth-basic@github.corp.ebay.com/xdx/data-store.git",
+    
     "mongodb": "^3.3.3",
     "prom-client": "^11.5.3",
     "radius": "^1.1.4",
