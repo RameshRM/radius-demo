@@ -10,6 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+	"parental-ctrl-db": "file:../parental-ctrl-db"
     
     "async": "^3.1.0",
     "express": "^4.17.1",
