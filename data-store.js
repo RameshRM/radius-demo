@@ -1,15 +1,17 @@
 'use strict';
-const DataStore = require('app-manifest-store').DataStore;
+const DataStore = require('parental-ctrl-db');
 const async = require('async');
-const EntityModels = require('app-manifest-store').EntityModels;
+const EntityModels = undefined;
 
 module.exports = function(options) {
   let dbConn;
   return function(req, res, next) {
     if (dbConn) {
+      req.ServerDb = dbConn.mongoose.conn;
+      req.NativeServerDb = dbConn.native;
+
       req._db = {
         conn: dbConn.mongoose.conn,
-        models: EntityModels,
         native: dbConn.native
       };
       return next();
@@ -17,21 +19,24 @@ module.exports = function(options) {
     async.parallel({
       native: native.bind(this),
       mongoose: function(next) {
-        return getDbConnector(options, function(err, resp) {
-          dbConn = resp;
-          req._db = {
-            conn: dbConn,
-            models: EntityModels
-          };
+        const ServerDb = require('parental-ctrl-db');
+        ServerDb.setup({
+          connection_string: process.env.CONNECTION_STRING || 'localhost:27017',
+
+        }, function(err, result) {
           return next(undefined, {
-            conn: dbConn,
-            models: EntityModels
+            conn: ServerDb
           });
+
         });
+
 
       }
     }, function(err, result) {
+
       dbConn = result;
+      req.ServerDb = result.mongoose.conn;
+      req.NativeServerDb = result.native;
       return next();
     });
   }
@@ -53,7 +58,7 @@ function native(next) {
   const assert = require('assert');
 
   // Connection URL
-  const url = 'mongodb://localhost:27017';
+  const url = process.env.CONNECTION_STRING || 'mongodb://localhost:27017';
 
   // Database Name
   const dbName = 'myproject';

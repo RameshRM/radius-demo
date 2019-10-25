@@ -4,17 +4,17 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "export cluster=false && export noop=true && node index.js",
+    "start": "export cluster=true && export noop=true && node index.js",
     "test": "node_modules/.bin/mocha test --exit"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-	"parental-ctrl-db": "file:../parental-ctrl-db"
-    
+    "parental-ctrl-db": "file:../parental-ctrl-db",
+
     "async": "^3.1.0",
     "express": "^4.17.1",
-    
+
     "mongodb": "^3.3.3",
     "prom-client": "^11.5.3",
     "radius": "^1.1.4",

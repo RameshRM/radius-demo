@@ -60,28 +60,45 @@ function setup() {
   });
 
   server.get('/generate', function(req, res) {
-    if (process.env.noop) {
-      return superagent.post('http://localhost:8080/process').end(function(
-        err, resp) {
-        return res.send({
-          status: resp && resp.statusCode
-        });
-      });
-      // return res.send({
-      //   status: 200
-      // });
+    return async.parallel({
+      mongoose: function(next) {
+        if (process.env.skip === 'true') {
+          return next();
+        }
+        let start = Date.now();
 
-    }
-    shell.exec(
-      'radclient -c 100000 -n 10000 -f start.data 127.0.0.1 acct password -q', {
-        silent: true,
-        async: true
-      },
-      function() {
-        return res.send({
-          status: 200
+        return req.ServerDb.UserClientIp.findAll({
+          id: req.query.id
+        }, function(err, result) {
+          let returnResult = result && result.body && result.body.ipSet ? Object.keys(result.body.ipSet) : [];
+          return next(undefined, returnResult);
         });
+
+
+      },
+      native: function(next) {
+        let start = Date.now();
+        // if (!req._db.native) {
+        //   return next();
+        // }
+
+        return req.NativeServerDb.collection('clientips').find({
+          id: req.query.id
+        }).next(function(err, docs) {
+          req.addSeries({
+            status: 'native'
+          });
+          return next(undefined, docs);
+        });
+      }
+    }, function(err, result) {
+
+      return res.send({
+        status: 200,
+        result: result
       });
+    });
+
 
   });
   server.post('/process', function(req, res) {
